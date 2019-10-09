@@ -19,7 +19,8 @@ using std::string;
 static const int kNoScaling = -1;
 
 /** 
- * Experiments stored by the ScenarioLoader class. 
+ * Experiments stored by the ScenarioLoader class.
+ * สตั้
  */
 class ScenarioLoader;
 

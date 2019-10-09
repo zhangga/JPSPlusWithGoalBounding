@@ -58,14 +58,17 @@ PrecomputeMap::~PrecomputeMap()
 {
 }
 
+// 计算地图
 DistantJumpPoints** PrecomputeMap::CalculateMap()
 {
 	m_mapCreated = true;
 
 	InitArray(m_jumpPointMap, m_width, m_height);
+	// 四方形相邻的跳点
 	CalculateJumpPointMap();
 
 	InitArray(m_distantJumpPointMap, m_width, m_height);
+	// 各方向到跳点的距离
 	CalculateDistantJumpPointMap();
 
 	// Destroy the m_jumpPointMap since it isn't needed for the search
@@ -151,6 +154,7 @@ void PrecomputeMap::SaveMap(const char *filename)
 #endif
 }
 
+// 读取预处理文件 .map.pre
 void PrecomputeMap::LoadMap(const char *filename)
 {
 	m_mapCreated = true;
@@ -199,6 +203,7 @@ void PrecomputeMap::LoadMap(const char *filename)
 	{
 		for (int c = 0; c < m_width; c++)
 		{
+			// 墙
 			if (IsWall(r, c))
 			{
 				// Don't load data if a wall
@@ -209,12 +214,14 @@ void PrecomputeMap::LoadMap(const char *filename)
 			map->blockedDirectionBitfield = 0;
 
 			// Load Jump Distances
+			// 读取跳点距离，2字节
 			for (int i = 0; i < 8; i++)
 			{
 				file.read((char*)&map->jumpDistance[i], 2);
 			}
 
 			// Fabricate wall bitfield for each node
+			// 墙的字节位，1表示该方向一直向前为墙，顺序见blockedDirectionBitfield
 			for (int i = 0; i < 8; i++)
 			{
 				// Jump distance of zero is invalid movement and means a wall
@@ -225,6 +232,7 @@ void PrecomputeMap::LoadMap(const char *filename)
 			}
 
 			// Load Goal Bounds
+			// 读取Goal Bounds，2字节，共8(八方向)*4(GoalBoundsEnum)个
 			for (int dir = 0; dir < 8; dir++)
 			{
 				short value;
@@ -272,6 +280,7 @@ void PrecomputeMap::DestroyArray(T**& t)
 	t = 0;
 }
 
+// 计算格子四方向相邻的跳点
 void PrecomputeMap::CalculateJumpPointMap()
 {
 	for (int r = 0; r < m_height; ++r)
@@ -609,10 +618,12 @@ void PrecomputeMap::CalculateDistantJumpPointMap()
 	}
 }
 
+// 计算Goal Bounding
 void PrecomputeMap::CalculateGoalBounding()
 {
 	printf("Goal Bounding Preprocessing\n");
 
+	// 创建结构
 	DijkstraFloodfill* dijkstra = new DijkstraFloodfill(m_width, m_height, m_map, m_distantJumpPointMap);
 
 	InitArray(m_goalBoundsMap, m_width, m_height);
@@ -630,6 +641,7 @@ void PrecomputeMap::CalculateGoalBounding()
 		}
 	}
 
+	// 遍历每一格
 	for (int startRow = 0; startRow < m_height; ++startRow)
 	{
 		printf("Row: %d\n", startRow);
@@ -641,9 +653,11 @@ void PrecomputeMap::CalculateGoalBounding()
 				continue;
 			}
 
+			// 计算该格可达到的情况
 			dijkstra->Flood(startRow, startCol);
 			int currentIteration = dijkstra->GetCurrentInteration();
 
+			// 再次遍历地图，计算该格的goal bounding
 			for (int r = 0; r < m_height; ++r)
 			{
 				for (int c = 0; c < m_width; ++c)
@@ -657,6 +671,7 @@ void PrecomputeMap::CalculateGoalBounding()
 					unsigned char status = dijkstra->m_mapNodes[r][c].m_listStatus;
 					int dir = dijkstra->m_mapNodes[r][c].m_directionFromStart;
 
+					// 设置该方向上的bounds值
 					if (iteration == currentIteration && 
 						status == PathfindingNode::OnClosed &&
 						dir >= 0 && dir <= 7)
@@ -683,6 +698,8 @@ void PrecomputeMap::CalculateGoalBounding()
 					}
 				}
 			}
+			// 显示该格的goal bounds
+			//printf("Grid: [row=%d, col=%d], Goal Bounding: [%s]\n", startRow, startCol, m_goalBoundsMap[startRow][startCol].bounds);
 		}
 	}
 

@@ -101,6 +101,7 @@ void DijkstraFloodfill::Flood(int r, int c)
 {
 	// Create 2048 entry function pointer lookup table
 	// This greatly speeds up processing by up to 40% by eliminating calculations and conditionals
+	// Cases.h文件中定义了可能出现的block情况，共2048个。
 	#define CASE(x) &DijkstraFloodfill::Explore_ ## x ## ,
 	static const DijkstraFloodFunctionPointer exploreDirectionsDijkstraFlood[2048] = 
 	{ 
@@ -129,11 +130,13 @@ void DijkstraFloodfill::Flood(int r, int c)
 		node->m_listStatus = PathfindingNode::OnOpen;
 
 		// Explore outward in all directions on the starting node
+		// 将该格周围八方向可行走的格加入open列表
 		Explore_AllDirectionsWithChecks(node);
 
 		node->m_listStatus = PathfindingNode::OnClosed;
 	}
 
+	// open列表
 #ifdef USE_FAST_OPEN_LIST
 	while (!m_fastOpenList->Empty())
 #else
@@ -141,6 +144,7 @@ void DijkstraFloodfill::Flood(int r, int c)
 #endif
 	{
 
+		// 从open列表中取值
 #ifdef USE_FAST_OPEN_LIST
 		DijkstraPathfindingNode* currentNode = m_fastOpenList->Pop();
 #else
@@ -151,6 +155,8 @@ void DijkstraFloodfill::Flood(int r, int c)
 		// This must be in the search style of JPS+ in order to produce
 		// the correct data for JPS+. If goal bounding is used for regular
 		// A*, then this search would need to mimic regular A*.
+		// 通过阻挡位情况+父节点(这样就把父节点也作为了阻挡)组成的值作为索引，
+		// 在Cases.h中[2048]数组中找到对应的Explore_XX，将对应可到达的点加入open列表。
 		(this->*exploreDirectionsDijkstraFlood[(currentNode->m_blockedDirectionBitfield * 8) + 
 			currentNode->m_directionFromParent])(currentNode);
 

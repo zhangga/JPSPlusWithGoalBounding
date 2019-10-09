@@ -60,6 +60,7 @@ JPSPlus::JPSPlus(JumpDistancesAndGoalBounds** jumpDistancesAndGoalBoundsMap, std
 	m_height = h;
 
 	// Adjust preallocation for worst-case
+	// 调整最坏情况的预分配
 	m_simpleUnsortedPriorityQueue = new SimpleUnsortedPriorityQueue(10000);
 	m_fastStack = new FastStack(1000);
 
@@ -110,6 +111,7 @@ void JPSPlus::DestroyArray(T**& t)
 	t = 0;
 }
 
+// 寻路
 bool JPSPlus::GetPath(xyLocJPS& s, xyLocJPS& g, std::vector<xyLocJPS> &path)
 {
 	if (path.size() > 0)
@@ -267,6 +269,7 @@ void JPSPlus::FinalizePath(std::vector<xyLocJPS> &finalPath)
 }
 
 // Macro definitions for exploring in a particular direction
+// 用于特定方向搜索的宏定义
 #define MacroExploreDown \
 	if (m_goalRow >= map->bounds[Down][MinRow] && \
 		m_goalRow <= map->bounds[Down][MaxRow] && \

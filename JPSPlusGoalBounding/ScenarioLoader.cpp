@@ -16,6 +16,7 @@ using std::ofstream;
 
 /** 
  * Loads the experiments from the scenario file. 
+ * 从方案文件 .map.scen 加载实验
  */
 ScenarioLoader::ScenarioLoader(const char* fname)
 {

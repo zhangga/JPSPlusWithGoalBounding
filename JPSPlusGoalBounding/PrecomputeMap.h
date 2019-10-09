@@ -73,8 +73,11 @@ struct GoalBounds
 
 struct JumpDistancesAndGoalBounds
 {
+	// 各方向墙的字节位
 	unsigned char blockedDirectionBitfield;	// highest bit [DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight, Down] lowest bit
+	// 跳点的距离
 	short jumpDistance[8];
+	// Goal Bounds
 	short bounds[8][4];
 };
 
@@ -94,8 +97,8 @@ protected:
 	bool m_mapCreated;
 	int m_width;
 	int m_height;
-	std::vector<bool> m_map;
-	unsigned char** m_jumpPointMap;
+	std::vector<bool> m_map; // 地图格子是否可行走
+	unsigned char** m_jumpPointMap; //格子四方向相邻的跳点
 	DistantJumpPoints** m_distantJumpPointMap;
 	GoalBounds** m_goalBoundsMap;
 	JumpDistancesAndGoalBounds** m_jumpDistancesAndGoalBoundsMap;

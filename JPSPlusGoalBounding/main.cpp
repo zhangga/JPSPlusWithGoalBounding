@@ -96,6 +96,7 @@ int _tmain(int argc, char* argv[])
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	DWORD dwError=0;
 
+	// Maps文件夹下存放地图文件
 	StringCchCopy(szDir, MAX_PATH, TEXT("Maps\\*"));
 	hFind = FindFirstFile(szDir, &ffd);
 
@@ -103,7 +104,7 @@ int _tmain(int argc, char* argv[])
 	{
 		char filename[2048];
 		std::vector<xyLoc> thePath;
-		std::vector<bool> mapData;
+		std::vector<bool> mapData; //地图数据，是否可行走
 		int width, height;
 		bool pre = false;
 		bool run = true;
@@ -121,6 +122,7 @@ int _tmain(int argc, char* argv[])
 			int filenameLength = 0;
 			while(ffd.cFileName[++filenameLength] != 0) {}
 			
+			// 查找.map文件
 			if (ffd.cFileName[filenameLength-3] == 'm' &&
 				ffd.cFileName[filenameLength-2] == 'a' &&
 				ffd.cFileName[filenameLength-1] == 'p')
@@ -132,9 +134,9 @@ int _tmain(int argc, char* argv[])
 				}
 				baseFilename[filenameLength] = '\0';
 
-				sprintf(mapFilename, "Maps\\%s", baseFilename);
-				sprintf(mapScenarioFilename, "Maps\\%s.scen", baseFilename);
-				sprintf(mapPreprocessedFilename, "Maps\\%s.pre", baseFilename);
+				sprintf(mapFilename, "Maps\\%s", baseFilename); // .map文件
+				sprintf(mapScenarioFilename, "Maps\\%s.scen", baseFilename); // .map.scen文件
+				sprintf(mapPreprocessedFilename, "Maps\\%s.pre", baseFilename); // .map.pre文件
 
 				std::ifstream ifile(mapPreprocessedFilename);
 				pre = !ifile;
@@ -145,8 +147,10 @@ int _tmain(int argc, char* argv[])
 			}
 		}
 
+		// 读取地图 .map
 		LoadMap(mapFilename, mapData, width, height);
 
+		// 预处理地图
 		if (pre)
 		{
 			printf("Begin preprocessing map: %s\n", mapFilename);
@@ -158,9 +162,11 @@ int _tmain(int argc, char* argv[])
 		{
 			continue;
 		}
-	
+		
+		// 读取预处理文件 .pre
 		void *reference = PrepareForSearch(mapData, width, height, mapPreprocessedFilename);
-	
+		
+		// 加载寻路实验 .scen
 		ScenarioLoader scen(mapScenarioFilename);
 
 		Timer t;
@@ -262,6 +268,7 @@ int _tmain(int argc, char* argv[])
 	return 0;
 }
 
+// 读取map文件数据
 void LoadMap(const char *fname, std::vector<bool> &map, int &width, int &height)
 {
 	FILE *f;
@@ -278,6 +285,7 @@ void LoadMap(const char *fname, std::vector<bool> &map, int &width, int &height)
 				do {
 					fscanf(f, "%c", &c);
 				} while (isspace(c));
+				// . G S 表示可行走
 				map[y*width+x] = (c == '.' || c == 'G' || c == 'S');
 			}
 		}
